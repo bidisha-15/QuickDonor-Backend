@@ -21,9 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.listen(process.env.PORT, () => {
-  console.log('Server is up & running...');
-});
-
 
 app.use("/auth", userRouter)
+
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+  console.log(`Server is up & running on port ${PORT}`);
+});
