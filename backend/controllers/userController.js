@@ -4,9 +4,12 @@ import jwt from 'jsonwebtoken';
 // import { errorHandler } from "../utils/error.js";
 
 export const signUP = async(req, res)=>{
-    const {username, email, bloodtype, password} = req.body;   
+    const {username, email, bloodtype, password, latitude, longitude} = req.body;   
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = new User({username, email, bloodtype,  password : hashedPassword});
+    const newUser = new User({username, email, bloodtype,  password : hashedPassword, location: {
+        type: "Point",
+        coordinates: [parseFloat(longitude), parseFloat(latitude)]
+    }});
     
     try{
         await newUser.save();       

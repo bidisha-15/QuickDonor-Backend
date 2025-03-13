@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import userRouter from './routers/userRouter.js'
+import donorRouter from './routers/donorRouter.js'
+import User from './models/usermodel.js';
 dotenv.config();
 mongoose
   .connect(process.env.MONGO_URI)
@@ -22,7 +24,13 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/auth", userRouter)
+app.get('/', async (req, res) => {
+  const users = await User.find();
+  console.log(users);
+  return res.status(200).json(users);
+})
+app.use("/auth", userRouter);
+app.use('/find-donor', donorRouter);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
