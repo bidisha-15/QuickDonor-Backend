@@ -20,6 +20,7 @@ export const UserMiddleware = async (req, res, next) => {
 
         // Attach user to the request object
         req.user = user; 
+        next();
     } catch (error) {
         return res.status(401).json({message:"Error"});
     }
