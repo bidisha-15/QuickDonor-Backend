@@ -21,20 +21,23 @@ const userSchema = new mongoose.Schema({
     password: {
         type : String,
         required : true,
-        // unique : true,
     },
     location:{
-        type: String,
-    },
-    latitude:{
-        type: Number,
-    },
-    longitude:{
-        type: Number,
-    },
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true
+        },
+        coordinates: {
+            type: [Number], 
+            required: true
+        }
+    }
     
     
 }, {timestamps : true});
+
+userSchema.index({ location: '2dsphere' });
 
 const User = mongoose.model("User", userSchema);
 export default User;
