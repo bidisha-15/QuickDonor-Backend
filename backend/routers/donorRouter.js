@@ -1,8 +1,8 @@
 import express from 'express';
-import { findNearbyDonors } from '../controllers/donorController.js';
+import { findNearbyEligibleDonors } from '../controllers/donorController.js';
 import { UserMiddleware } from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
-router.post('/', UserMiddleware, findNearbyDonors);
+router.post('/', UserMiddleware, findNearbyEligibleDonors);
 
 export default router;

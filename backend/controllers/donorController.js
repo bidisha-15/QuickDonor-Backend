@@ -1,18 +1,36 @@
 import User from "../models/usermodel.js";
 
-export const findNearbyDonors = async (req, res) => {
+const bloodCompatibility = {
+    "A+": ["A+", "A-", "O+", "O-"],
+    "A-": ["A-", "O-"],
+    "B+": ["B+", "B-", "O+", "O-"],
+    "B-": ["B-", "O-"],
+    "AB+": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], // Universal recipient
+    "AB-": ["A-", "B-", "AB-", "O-"],
+    "O+": ["O+", "O-"],
+    "O-": ["O-"] // Universal donor
+};
+
+export const findNearbyEligibleDonors = async (req, res) => {
     try {
         const {latitude, longitude, bloodtype} = req.body;
         if (!latitude || !longitude || !bloodtype) {
             return res.status(400).json({ message: "Please provide latitude, longitude and blood type" });
         }
 
+        const eligibleBloodTypes = bloodCompatibility[bloodtype];
+
+        if (!eligibleBloodTypes) {
+            return res.status(400).json({ message: "Invalid blood type provided" });
+        }
+
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
-        console.log(lat, lng)
+        console.log(lat, lng);
+        console.log("Eligible blood groups: ", eligibleBloodTypes);
 
         const nearbyDonors = await User.find({
-            bloodtype,
+            bloodtype: { $in: eligibleBloodTypes },
             location: {
                 $geoWithin: {
                     $centerSphere: [[lng, lat], 10 / 6378.1]
