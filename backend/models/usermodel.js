@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
     phone:{
         type:String 
     },
+    gender:{
+        type:String,
+        required:true
+    },
     bloodtype:{
         type:String,
         required: true
@@ -38,6 +42,10 @@ const userSchema = new mongoose.Schema({
             type: [Number], 
             required: true
         }
+    },
+    canDonate: { 
+        type: Boolean, 
+        default: false 
     },
     lastDonation: {
         type: Date,
