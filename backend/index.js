@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import userRouter from './routers/userRouter.js'
+
 dotenv.config();
 mongoose
   .connect(process.env.MONGO_URI)
