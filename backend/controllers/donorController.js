@@ -1,3 +1,4 @@
+import axios from "axios";
 import User from "../models/usermodel.js";
 
 const bloodCompatibility = {
@@ -13,9 +14,13 @@ const bloodCompatibility = {
 
 export const findNearbyEligibleDonors = async (req, res) => {
     try {
-        const { bloodtype } = req.body;
-        const longitude = req.body.location.coordinates[0];
-        const latitude = req.body.location.coordinates[1];
+        const { bloodtype, address } = req.body;
+        const response = await axios(`https://maps.gomaps.pro/maps/api/geocode/json`, {
+            params: { key: process.env.MAPS_API_KEY, address }
+        });
+        const location = response.data.results[0].geometry.location;
+        const latitude = location.lat;
+        const longitude = location.lng;
 
         if (!latitude || !longitude || !bloodtype) {
             return res.status(400).json({ message: "Please provide latitude, longitude, and blood type" });
