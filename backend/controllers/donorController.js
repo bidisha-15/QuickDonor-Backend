@@ -13,9 +13,12 @@ const bloodCompatibility = {
 
 export const findNearbyEligibleDonors = async (req, res) => {
     try {
-        const {latitude, longitude, bloodtype} = req.body;
+        const { bloodtype } = req.body;
+        const longitude = req.body.location.coordinates[0];
+        const latitude = req.body.location.coordinates[1];
+
         if (!latitude || !longitude || !bloodtype) {
-            return res.status(400).json({ message: "Please provide latitude, longitude and blood type" });
+            return res.status(400).json({ message: "Please provide latitude, longitude, and blood type" });
         }
 
         const eligibleBloodTypes = bloodCompatibility[bloodtype];
@@ -26,21 +29,30 @@ export const findNearbyEligibleDonors = async (req, res) => {
 
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
+
         console.log(lat, lng);
         console.log("Eligible blood groups: ", eligibleBloodTypes);
 
-        const nearbyDonors = await User.find({
-            bloodtype: { $in: eligibleBloodTypes },
-            location: {
-                $geoWithin: {
-                    $centerSphere: [[lng, lat], 10 / 6378.1]
+        const nearbyDonors = await User.aggregate([
+            {
+                $geoNear: {
+                    near: { type: "Point", coordinates: [lng, lat] },
+                    distanceField: "distance", // The calculated distance
+                    spherical: true,
+                    maxDistance: 10 * 1000, // 10 km in meters
+                    query: { bloodtype: { $in: eligibleBloodTypes } }
+                }
+            },
+            {
+                $project: {
+                    password: 0,
+                    email: 0
                 }
             }
+        ]);
 
-        }).select('-password -email');
-
-        if (!nearbyDonors) {
-            res.status(404).json({
+        if (!nearbyDonors.length) {
+            return res.status(404).json({
                 message: "So sorry, no donors found nearby"
             });
         }
@@ -52,4 +64,4 @@ export const findNearbyEligibleDonors = async (req, res) => {
         console.error("Error finding donors:", error);
         return res.status(500).json({ message: "Server error" });
     }
-}
+};

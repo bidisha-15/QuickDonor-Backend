@@ -2,7 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const geocode = async (req, res, next) => {
+export const geoCode = async (req, res, next) => {
     try {
         const { address } = req.body;
         const response = await axios(`https://maps.gomaps.pro/maps/api/geocode/json`, {
