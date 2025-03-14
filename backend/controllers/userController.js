@@ -3,10 +3,14 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 // import { errorHandler } from "../utils/error.js";
 
+// export const signUP = async(req, res, next)=>{
+//     const {username, email, gender, bloodtype, password} = req.body;   
+//     const hashedPassword = bcrypt.hashSync(password, 10);
+//     const newUser = new User({username, email, gender, bloodtype, password : hashedPassword});
 export const signUP = async(req, res)=>{
-    const {username, email, bloodtype, password, latitude, longitude} = req.body;   
+    const {username, email, bloodtype, gender, password, latitude, longitude} = req.body;   
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = new User({username, email, bloodtype,  password : hashedPassword, location: {
+    const newUser = new User({username, email, bloodtype, gender, password : hashedPassword, location: {
         type: "Point",
         coordinates: [parseFloat(longitude), parseFloat(latitude)]
     }});
@@ -57,4 +61,7 @@ export const signOut = async(req,res)=>{
     }catch(error){
         return res.status(500).json({ message: "Error signing out" });
     }
-};
+}
+
+
+
