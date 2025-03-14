@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+const getRandomPastDate = () => {
+    const today = new Date();
+    const pastDate = new Date(today.setMonth(today.getMonth() - Math.floor(Math.random() * 6)));
+    return pastDate;
+};
+
 const userSchema = new mongoose.Schema({
     username: {
         type : String,
@@ -32,6 +38,10 @@ const userSchema = new mongoose.Schema({
             type: [Number], 
             required: true
         }
+    },
+    lastDonation: {
+        type: Date,
+        default: getRandomPastDate 
     }
     
     
