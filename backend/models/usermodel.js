@@ -50,6 +50,9 @@ const userSchema = new mongoose.Schema({
     lastDonation: {
         type: Date,
         default: getRandomPastDate 
+    },
+    dateOfBirth: {
+        type: Date
     }
     
     
