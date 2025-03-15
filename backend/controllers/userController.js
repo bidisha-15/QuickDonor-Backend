@@ -6,17 +6,17 @@ import jwt from 'jsonwebtoken';
 
 export const signUP = async (req, res) => {
     try {
-        const { username, email, bloodtype, password, address } = req.body;
+        const { username, email, gender, bloodtype, password, address } = req.body;
         const response = await axios(`https://maps.gomaps.pro/maps/api/geocode/json`, {
             params: { key: process.env.MAPS_API_KEY, address }
         });
-        const location = response.data.results[0].geometry.location;  
+        const location = response.data.results[0].geometry.location;
         const latitude = location.lat;
         const longitude = location.lng;
 
         const hashedPassword = bcrypt.hashSync(password, 10);
         const newUser = new User({
-            username, email, bloodtype, password: hashedPassword, location: {
+            username, email, gender, bloodtype, password: hashedPassword, location: {
                 type: "Point",
                 coordinates: [parseFloat(longitude), parseFloat(latitude)]
             }
@@ -67,6 +67,36 @@ export const signOut = async (req, res) => {
         return res.status(200).json("User has been logged out");
     } catch (error) {
         return res.status(500).json({ message: "Error signing out" });
+    }
+}
+
+
+export const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        return res.status(200).json(user);
+    } catch (error) {
+        return res.status(500).json({ message: `Error getting profile infromation: ${error.message}` });
+    }
+}
+
+export const updateProfile = async (req, res) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+            $set: req.body
+        }, {
+            new: true, runValidators: true
+        });
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        return res.status(200).json(updatedUser);
+
+    } catch (error) {
+        return res.status(500).json({ message: `Error updating profile: ${error.message}` });
     }
 }
 
