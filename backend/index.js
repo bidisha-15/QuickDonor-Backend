@@ -6,6 +6,7 @@ import cors from 'cors';
 import userRouter from './routers/userRouter.js'
 import donorRouter from './routers/donorRouter.js'
 import User from './models/usermodel.js';
+import { WebSocket, WebSocketServer } from 'ws';
 dotenv.config();
 mongoose
   .connect(process.env.MONGO_URI)
@@ -35,4 +36,23 @@ app.use('/find-donor', donorRouter);
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server is up & running on port ${PORT}`);
+});
+
+
+const wss = new WebSocketServer({ port: 3001 });
+wss.on('connection', (ws) => {
+  console.log('New client connected');
+
+  ws.on('message', (msg) => {
+    console.log(`Message received: ${msg}`);
+    wss.clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(msg.toString());
+      }
+    });
+  });
+  
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
 });
