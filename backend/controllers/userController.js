@@ -100,5 +100,17 @@ export const updateProfile = async (req, res) => {
     }
 }
 
-
-
+export const Verify = async (req, res) => {
+    const token = req.cookies.access_token; // Retrieve token from HTTP-only cookie
+  
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized: No token" });
+    }
+  
+    jwt.verify(token, process.env.JWT, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: "Forbidden: Invalid token" });
+      }
+      res.json({ message: "Token Valid", user });
+    });
+  }
