@@ -8,6 +8,7 @@ import donorRouter from './routers/donorRouter.js'
 import User from './models/usermodel.js';
 import nodemailer from "nodemailer";
 import { WebSocket, WebSocketServer } from 'ws';
+import { bloodCompatibility } from './controllers/donorController.js';
 dotenv.config();
 mongoose
   .connect(process.env.MONGO_URI)
@@ -52,7 +53,7 @@ wss.on('connection', (ws) => {
       }
     });
   });
-  
+
   ws.on('close', () => {
     console.log('Client disconnected');
   });
@@ -70,9 +71,11 @@ const transporter = nodemailer.createTransport({
 // Search Donors & Notify API
 app.post("/mail-donors", async (req, res) => {
   const { bloodtype } = req.body;
+  const eligibleTypes = bloodCompatibility[bloodtype];
+  console.log(eligibleTypes);
 
   try {
-    const donors = await User.find({ bloodtype, canDonate: true });
+    const donors = await User.find({ bloodtype: eligibleTypes, canDonate: true });
 
     if (donors.length === 0) {
       return res.status(404).json({ message: "No donors found" });
@@ -82,6 +85,7 @@ app.post("/mail-donors", async (req, res) => {
 
     // Send email notifications
     donors.forEach((donor) => {
+      console.log(donor);
       transporter.sendMail(
         {
           from: process.env.EMAIL,
@@ -91,9 +95,9 @@ app.post("/mail-donors", async (req, res) => {
         },
         (error, info) => {
           if (error) {
-            console.log(`Error sending email to ${donor.email}:` , error);
+            console.log(`Error sending email to ${donor.email}:`, error);
           } else {
-            console.log(`Email sent to ${donor.email}:` , info.response);
+            console.log(`Email sent to ${donor.email}:`, info.response);
           }
         }
       );

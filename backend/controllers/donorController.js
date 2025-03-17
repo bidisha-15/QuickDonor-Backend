@@ -1,7 +1,8 @@
 import axios from "axios";
 import User from "../models/usermodel.js";
+import nodemailer from 'nodemailer';
 
-const bloodCompatibility = {
+export const bloodCompatibility = {
     "A+": ["A+", "A-", "O+", "O-"],
     "A-": ["A-", "O-"],
     "B+": ["B+", "B-", "O+", "O-"],
@@ -44,23 +45,73 @@ export const findNearbyEligibleDonors = async (req, res) => {
                     near: { type: "Point", coordinates: [lng, lat] },
                     distanceField: "distance", // The calculated distance
                     spherical: true,
-                    maxDistance: 10 * 1000, // 10 km in meters
+                    maxDistance: 100 * 1000, // 10 km in meters
                     query: { bloodtype: { $in: eligibleBloodTypes } }
                 }
             },
             {
                 $project: {
-                    password: 0,
-                    email: 0
+                    username: 1,
+                    name: 1,
+                    phone: 1,
+                    email: 1,
+                    bloodtype: 1,
+                    lastDonation: 1,
+                    distance: 1
                 }
             }
-        ]);
+        ]); 
+
+        
 
         if (!nearbyDonors.length) {
             return res.status(404).json({
                 message: "So sorry, no donors found nearby"
             });
-        }
+        } 
+        console.log(nearbyDonors);
+
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL, 
+            pass: process.env.PASSWORD,  
+          },
+        });
+
+        const notificationMessage = `A recipient is looking for ${bloodtype} blood. Please check the website.`;
+
+        nearbyDonors.forEach((donor) => { 
+              console.log(donor);
+              transporter.sendMail(
+                {
+                  from: process.env.EMAIL,
+                  to: donor.email,
+                  subject: "Urgent: Blood Donation Needed",
+                  text: notificationMessage,
+                },
+                (error, info) => {
+                  if (error) {
+                    console.log(`Error sending email to ${donor.email}:` , error);
+                  } else {
+                    console.log(`Email sent to ${donor.email}:` , info.response);
+                  }
+                }
+              );
+            });
+            // Store notification in DB
+            await User.updateMany(
+              { _id: { $in: nearbyDonors.map((d) => d._id) } },
+              {
+                $push: {
+                  notifications: {
+                    message: notificationMessage,
+                    timestamp: new Date(),
+                    read: false,
+                  },
+                },
+              }
+            );
 
         return res.status(200).json({
             donors: nearbyDonors
