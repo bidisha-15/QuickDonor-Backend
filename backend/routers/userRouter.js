@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/signup", signUP);
 router.post("/signin", signIN);
-router.get("/signout", signOut);
+router.post("/signout", signOut);
 router.post("/toggledonorstatus",toggleDonorStatus);
 router.post("/request", requestBlood);
 router.get("/profile", UserMiddleware, getProfile);
