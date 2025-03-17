@@ -46,7 +46,7 @@ export const findNearbyEligibleDonors = async (req, res) => {
           distanceField: "distance", // The calculated distance
           spherical: true,
           maxDistance: 100 * 1000, // 10 km in meters
-          query: { bloodtype: { $in: eligibleBloodTypes } }
+          query: { bloodtype: { $in: eligibleBloodTypes }, email:{$ne:req.user.email} }
         }
       },
       {
